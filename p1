@@ -1,0 +1,169 @@
+import tkinter as tk
+import sqlite3
+
+# Initialize SQLite database
+conn = sqlite3.connect('calculator_history.db')
+c = conn.cursor()
+
+# Create a table to store calculation history
+c.execute('''CREATE TABLE IF NOT EXISTS history
+             (calculation TEXT, result TEXT)''')
+conn.commit()
+
+# Function to save calculation history to the database
+def save_history(calculation, result):
+    c.execute("INSERT INTO history VALUES (?, ?)", (calculation, result))
+    conn.commit()
+
+# Function to retrieve calculation history from the database
+def retrieve_history():
+    c.execute("SELECT * FROM history")
+    return c.fetchall()
+
+# BMI Calculator function
+def calculate_bmi():
+    weight = float(weight_entry.get())
+    height = float(height_entry.get()) / 100  # Convert height to meters
+    bmi = weight / (height ** 2)
+    bmi_result_label.config(text=f"BMI: {bmi:.2f}")
+    save_history(f"BMI: Weight={weight}, Height={height*100}cm", f"{bmi:.2f}")
+
+# Megabyte to Gigabyte converter function
+def mb_to_gb():
+    mb = float(mb_entry.get())
+    gb = mb / 1024
+    mb_to_gb_result_label.config(text=f"{mb} MB = {gb:.2f} GB")
+    save_history(f"{mb} MB to GB conversion", f"{gb:.2f} GB")
+
+# Gigabyte to Megabyte converter function
+def gb_to_mb():
+    gb = float(gb_entry.get())
+    mb = gb * 1024
+    gb_to_mb_result_label.config(text=f"{gb} GB = {mb:.2f} MB")
+    save_history(f"{gb} GB to MB conversion", f"{mb:.2f} MB")
+
+# Discount calculator function
+def calculate_discount():
+    price = float(price_entry.get())
+    discount = float(discount_entry.get())
+    discounted_price = price - (price * discount / 100)
+    discount_result_label.config(text=f"Discounted Price: {discounted_price:.2f}")
+    save_history(f"Discount calculation: Price={price}, Discount={discount}%", f"{discounted_price:.2f}")
+
+# GST calculator function
+def calculate_gst():
+    price = float(price_entry.get())
+    gst = float(gst_entry.get())
+    gst_amount = price * (gst / 100)
+    total_price = price + gst_amount
+    gst_result_label.config(text=f"Total Price (including GST): {total_price:.2f}")
+    save_history(f"GST calculation: Price={price}, GST={gst}%", f"{total_price:.2f}")
+
+# Currency converter function
+def convert_currency():
+    amount = float(amount_entry.get())
+    conversion_rate = float(rate_entry.get())
+    converted_amount = amount * conversion_rate
+    currency_result_label.config(text=f"Converted Amount: {converted_amount:.2f}")
+    save_history(f"Currency conversion: Amount={amount}, Rate={conversion_rate}", f"{converted_amount:.2f}")
+
+# Function to display history
+def display_history():
+    history_text.delete(1.0, tk.END)
+    history = retrieve_history()
+    for entry in history:
+        history_text.insert(tk.END, f"{entry[0]} = {entry[1]}\n")
+
+root = tk.Tk()
+root.title("Calculator")
+
+# BMI Calculator
+bmi_frame = tk.Frame(root)
+bmi_frame.pack(pady=10)
+tk.Label(bmi_frame, text="Weight (kg):").grid(row=0, column=0)
+weight_entry = tk.Entry(bmi_frame)
+weight_entry.grid(row=0, column=1)
+tk.Label(bmi_frame, text="Height (cm):").grid(row=1, column=0)
+height_entry = tk.Entry(bmi_frame)
+height_entry.grid(row=1, column=1)
+bmi_button = tk.Button(bmi_frame, text="Calculate BMI", command=calculate_bmi)
+bmi_button.grid(row=2, columnspan=2)
+bmi_result_label = tk.Label(bmi_frame, text="")
+bmi_result_label.grid(row=3, columnspan=2)
+
+# Megabyte to Gigabyte converter
+mb_to_gb_frame = tk.Frame(root)
+mb_to_gb_frame.pack(pady=10)
+tk.Label(mb_to_gb_frame, text="Megabytes (MB):").grid(row=0, column=0)
+mb_entry = tk.Entry(mb_to_gb_frame)
+mb_entry.grid(row=0, column=1)
+mb_to_gb_button = tk.Button(mb_to_gb_frame, text="MB to GB", command=mb_to_gb)
+mb_to_gb_button.grid(row=1, columnspan=2)
+mb_to_gb_result_label = tk.Label(mb_to_gb_frame, text="")
+mb_to_gb_result_label.grid(row=2, columnspan=2)
+
+# Gigabyte to Megabyte converter
+gb_to_mb_frame = tk.Frame(root)
+gb_to_mb_frame.pack(pady=10)
+tk.Label(gb_to_mb_frame, text="Gigabytes (GB):").grid(row=0, column=0)
+gb_entry = tk.Entry(gb_to_mb_frame)
+gb_entry.grid(row=0, column=1)
+gb_to_mb_button = tk.Button(gb_to_mb_frame, text="GB to MB", command=gb_to_mb)
+gb_to_mb_button.grid(row=1, columnspan=2)
+gb_to_mb_result_label = tk.Label(gb_to_mb_frame, text="")
+gb_to_mb_result_label.grid(row=2, columnspan=2)
+
+# Discount calculator
+discount_frame = tk.Frame(root)
+discount_frame.pack(pady=10)
+tk.Label(discount_frame, text="Price:").grid(row=0, column=0)
+price_entry = tk.Entry(discount_frame)
+price_entry.grid(row=0, column=1)
+tk.Label(discount_frame, text="Discount (%):").grid(row=1, column=0)
+discount_entry = tk.Entry(discount_frame)
+discount_entry.grid(row=1, column=1)
+discount_button = tk.Button(discount_frame, text="Calculate Discount", command=calculate_discount)
+discount_button.grid(row=2, columnspan=2)
+discount_result_label = tk.Label(discount_frame, text="")
+discount_result_label.grid(row=3, columnspan=2)
+
+# GST calculator
+gst_frame = tk.Frame(root)
+gst_frame.pack(pady=10)
+tk.Label(gst_frame, text="Price:").grid(row=0, column=0)
+price_entry = tk.Entry(gst_frame)
+price_entry.grid(row=0, column=1)
+tk.Label(gst_frame, text="GST (%):").grid(row=1, column=0)
+gst_entry = tk.Entry(gst_frame)
+gst_entry.grid(row=1, column=1)
+gst_button = tk.Button(gst_frame, text="Calculate GST", command=calculate_gst)
+gst_button.grid(row=2, columnspan=2)
+gst_result_label = tk.Label(gst_frame, text="")
+gst_result_label.grid(row=3, columnspan=2)
+
+# Currency converter
+currency_frame = tk.Frame(root)
+currency_frame.pack(pady=10)
+tk.Label(currency_frame, text="Amount:").grid(row=0, column=0)
+amount_entry = tk.Entry(currency_frame)
+amount_entry.grid(row=0, column=1)
+tk.Label(currency_frame, text="Rate:").grid(row=1, column=0)
+rate_entry = tk.Entry(currency_frame)
+rate_entry.grid(row=1, column=1)
+currency_button = tk.Button(currency_frame, text="Convert Currency", command=convert_currency)
+currency_button.grid(row=2, columnspan=2)
+currency_result_label = tk.Label(currency_frame, text="")
+currency_result_label.grid(row=3, columnspan=2)
+
+# History display
+history_frame = tk.Frame(root)
+history_frame.pack(pady=10)
+history_button = tk.Button(history_frame, text="Show History", command=display_history)
+history_button.pack()
+history_text = tk.Text(history_frame, width=50, height=10)
+history_text.pack()
+
+root.mainloop()
+
+# Close the database connection when the program exits
+conn.close()
