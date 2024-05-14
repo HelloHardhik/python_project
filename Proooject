@@ -1,0 +1,66 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class SudokuGame:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Sudoku Game")
+        self.entries = [[None for _ in range(9)] for _ in range(9)]
+        self.setup_ui()
+
+    def setup_ui(self):
+        frame = tk.Frame(self.root)
+        frame.pack()
+        
+        for i in range(9):
+            for j in range(9):
+                entry = tk.Entry(frame, width=2, font=('Arial', 18), justify='center')
+                entry.grid(row=i, column=j, padx=5, pady=5)
+                self.entries[i][j] = entry
+
+        button_frame = tk.Frame(self.root)
+        button_frame.pack(pady=10)
+        
+        check_button = tk.Button(button_frame, text="Check", command=self.check_solution)
+        check_button.grid(row=0, column=0, padx=5)
+        
+        reset_button = tk.Button(button_frame, text="Reset", command=self.reset_grid)
+        reset_button.grid(row=0, column=1, padx=5)
+
+    def check_solution(self):
+        try:
+            grid = [[int(self.entries[i][j].get() or 0) for j in range(9)] for i in range(9)]
+        except ValueError:
+            messagebox.showerror("Invalid input", "Please enter numbers between 1 and 9.")
+            return
+        
+        if self.is_valid_solution(grid):
+            messagebox.showinfo("Sudoku", "Congratulations! You solved the puzzle.")
+        else:
+            messagebox.showerror("Sudoku", "The solution is incorrect. Please try again.")
+
+    def is_valid_solution(self, grid):
+        def is_valid_block(block):
+            nums = [num for num in block if num != 0]
+            return len(nums) == len(set(nums))
+
+        for i in range(9):
+            if not is_valid_block([grid[i][j] for j in range(9)]) or not is_valid_block([grid[j][i] for j in range(9)]):
+                return False
+
+        for i in range(0, 9, 3):
+            for j in range(0, 9, 3):
+                if not is_valid_block([grid[x][y] for x in range(i, i+3) for y in range(j, j+3)]):
+                    return False
+
+        return True
+
+    def reset_grid(self):
+        for i in range(9):
+            for j in range(9):
+                self.entries[i][j].delete(0, tk.END)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = SudokuGame(root)
+    root.mainloop()
